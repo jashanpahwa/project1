@@ -1,0 +1,106 @@
+.bet-control {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.bet-amount {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bet-amount label {
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.bet-amount input {
+  padding: 0.8rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.quick-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.quick-buttons button {
+  flex: 1;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  color: #f8fafc;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.quick-buttons button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.auto-roll {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.auto-roll label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.auto-roll input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #8b5cf6;
+}
+
+.rolls-count {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-left: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.rolls-count label {
+  color: #94a3b8;
+}
+
+.rolls-count input {
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.place-bet-btn {
+  padding: 1rem;
+  background: linear-gradient(to right, #8b5cf6, #ec4899);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.place-bet-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}

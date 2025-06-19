@@ -1,0 +1,470 @@
+/* Wallet Container */
+.wallet-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: #f8fafc;
+}
+
+/* Wallet Header */
+.wallet-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.wallet-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(to right, #8b5cf6, #ec4899);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.wallet-subtitle {
+  font-size: 1.1rem;
+  color: #94a3b8;
+}
+
+/* Balance Card */
+.balance-card {
+  background: rgba(15, 23, 42, 0.7);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.balance-icon {
+  font-size: 2.5rem;
+  padding: 1.2rem;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.2);
+}
+
+.balance-details {
+  flex: 1;
+}
+
+.balance-label {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  margin-bottom: 0.3rem;
+}
+
+.balance-amount {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.balance-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.action-btn {
+  padding: 0.7rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.quick-deposit {
+  background: linear-gradient(to right, #10b981, #3b82f6);
+  color: white;
+}
+
+.quick-deposit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.quick-withdraw {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.quick-withdraw:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Wallet Tabs */
+.wallet-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 2rem;
+}
+
+.wallet-tab {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.wallet-tab:hover {
+  color: #f8fafc;
+}
+
+.wallet-tab.active {
+  color: #f8fafc;
+}
+
+.wallet-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #8b5cf6, #ec4899);
+}
+
+/* Tab Content */
+.tab-content {
+  background: rgba(15, 23, 42, 0.7);
+  border-radius: 12px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 400px;
+}
+
+/* Deposit Tab */
+.payment-methods {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: #f8fafc;
+}
+
+.method-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.method-card {
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.method-card:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.method-card.active {
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.2);
+}
+
+.method-icon {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.method-name {
+  font-size: 0.9rem;
+}
+
+.deposit-form {
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.amount-options {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.amount-option {
+  padding: 0.7rem 1.2rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.amount-option:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.custom-amount {
+  margin-bottom: 1.5rem;
+}
+
+.custom-amount label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.custom-amount input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.deposit-btn {
+  background: linear-gradient(to right, #10b981, #3b82f6);
+  color: white;
+}
+
+.deposit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.deposit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Withdraw Tab */
+.withdraw-form {
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.withdraw-btn {
+  background: linear-gradient(to right, #ef4444, #f59e0b);
+  color: white;
+}
+
+.withdraw-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+.withdraw-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.bank-details {
+  margin: 1.5rem 0;
+}
+
+.bank-card {
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.bank-icon {
+  font-size: 1.5rem;
+  padding: 0.8rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.bank-name {
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+}
+
+.account-number {
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+/* History Tab */
+.transaction-filters {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+  color: #f8fafc;
+}
+
+.filter-btn.active {
+  background: rgba(139, 92, 246, 0.2);
+  color: #f8fafc;
+  border-color: #8b5cf6;
+}
+
+.transaction-list {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.transaction-card {
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+  transition: all 0.3s ease;
+}
+
+.transaction-card:hover {
+  background: rgba(30, 41, 59, 0.7);
+}
+
+.transaction-icon {
+  font-size: 1.5rem;
+  padding: 0.8rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.transaction-details {
+  flex: 1;
+}
+
+.transaction-type {
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+}
+
+.transaction-date {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.transaction-amount {
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.transaction-amount.deposit,
+.transaction-amount.win {
+  color: #10b981;
+}
+
+.transaction-amount.withdrawal,
+.transaction-amount.loss {
+  color: #ef4444;
+}
+
+.transaction-status {
+  font-size: 0.8rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  margin-left: 1rem;
+}
+
+.transaction-status.completed {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.transaction-status.pending {
+  background: rgba(251, 191, 36, 0.2);
+  color: #f59e0b;
+}
+
+.transaction-status.win {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.transaction-status.loss {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  text-align: center;
+  color: #94a3b8;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .balance-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .balance-actions {
+    width: 100%;
+  }
+  
+  .action-btn {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .wallet-tabs {
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+  
+  .wallet-tab {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+}

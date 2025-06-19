@@ -1,0 +1,373 @@
+/* Base Styles */
+.promotions-page {
+  background-color: #0f172a;
+  color: #f8fafc;
+  min-height: 100vh;
+  padding-bottom: 3rem;
+}
+
+/* Hero Section */
+.promo-hero {
+  background: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.8));
+             /* url('/assets/promos/hero-bg.jpg');*/
+  background-size: cover;
+  background-position: center;
+  padding: 5rem 2rem;
+  text-align: center;
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.hero-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero-content h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(to right, #fff, #f59e0b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: glow 2s infinite alternate;
+}
+
+@keyframes glow {
+  from { text-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
+  to { text-shadow: 0 0 20px rgba(245, 158, 11, 0.8); }
+}
+
+.hero-content p {
+  font-size: 1.2rem;
+  color: #e2e8f0;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Main Container */
+.promo-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Tabs Navigation */
+.promo-tabs {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+  scrollbar-width: none;
+}
+
+.promo-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-btn {
+  padding: 0.7rem 1.5rem;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50px;
+  color: #94a3b8;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+  background: rgba(30, 41, 59, 0.9);
+  color: #f8fafc;
+}
+
+.tab-btn.active {
+  background: linear-gradient(to right, #8b5cf6, #ec4899);
+  color: white;
+  border-color: transparent;
+}
+
+/* Promotions Grid */
+.promo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+@media (max-width: 768px) {
+  .promo-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Promotion Card */
+.promo-card {
+  background: rgba(30, 41, 59, 0.7);
+  border-radius: 15px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.promo-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.promo-card.claimed {
+  opacity: 0.7;
+  position: relative;
+}
+
+.promo-card.claimed::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.promo-card.expired {
+  opacity: 0.6;
+}
+
+.promo-image {
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.promo-content {
+  padding: 1.5rem;
+}
+
+.promo-content h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #f8fafc;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #f59e0b;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.description {
+  color: #94a3b8;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+/* Badges */
+.type-badge, .claimed-badge, .expired-badge {
+  position: absolute;
+  top: 1rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.type-badge {
+  right: 1rem;
+  background: rgba(139, 92, 246, 0.2);
+  color: #8b5cf6;
+  border: 1px solid #8b5cf6;
+}
+
+.claimed-badge {
+  left: 1rem;
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid #10b981;
+}
+
+.expired-badge {
+  left: 1rem;
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+/* Countdown Timer */
+.countdown {
+  margin: 1.5rem 0;
+}
+
+.countdown span {
+  display: block;
+  font-size: 0.9rem;
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+}
+
+.countdown-timer {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.countdown-timer span {
+  background: rgba(15, 23, 42, 0.8);
+  padding: 0.5rem;
+  border-radius: 5px;
+  min-width: 40px;
+  text-align: center;
+  color: #f8fafc;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+/* Promotion Actions */
+.promo-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.claim-btn {
+  padding: 0.8rem 1.5rem;
+  background: linear-gradient(to right, #8b5cf6, #ec4899);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.claim-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+
+.claimed-btn, .expired-btn {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: not-allowed;
+  width: 100%;
+}
+
+.claimed-btn {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.expired-btn {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.promo-code {
+  background: rgba(15, 23, 42, 0.8);
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.promo-code span {
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.promo-code strong {
+  color: #f8fafc;
+  font-size: 1rem;
+}
+
+/* Empty State */
+.no-promos {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 15px;
+  margin-top: 2rem;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #f59e0b;
+}
+
+.no-promos h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #f8fafc;
+}
+
+.no-promos p {
+  color: #94a3b8;
+  margin-bottom: 1.5rem;
+}
+
+.browse-btn {
+  padding: 0.8rem 1.5rem;
+  background: linear-gradient(to right, #8b5cf6, #ec4899);
+  color: white;
+  border-radius: 50px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.browse-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+
+/* Terms Section */
+.terms-section {
+  background: rgba(30, 41, 59, 0.7);
+  border-radius: 15px;
+  padding: 2rem;
+  margin-top: 3rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.terms-section h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #f8fafc;
+}
+
+.terms-section ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+.terms-section li {
+  margin-bottom: 0.5rem;
+}
+
+.terms-link {
+  color: #8b5cf6;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.terms-link:hover {
+  color: #ec4899;
+  text-decoration: underline;
+}
