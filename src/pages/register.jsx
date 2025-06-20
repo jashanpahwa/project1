@@ -3,15 +3,19 @@ import { useNavigate } from "react-router-dom";
 import "./css/register.css";
 
 export default function Register() {
-  const [mobile, setMobile] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [formData, setFormData] = useState({
+    mobile: "",
+    password: "",
+    confirmPassword: ""
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [shake, setShake] = useState(false);
   const [currentTheme, setCurrentTheme] = useState("light");
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const navigate = useNavigate();
 
   // Dynamic background themes
@@ -35,12 +39,63 @@ export default function Register() {
     return () => clearInterval(interval);
   }, []);
 
+  // Calculate password strength
+  useEffect(() => {
+    if (formData.password.length === 0) {
+      setPasswordStrength(0);
+      return;
+    }
+
+    let strength = 0;
+    if (formData.password.length > 5) strength += 1;
+    if (formData.password.length > 8) strength += 1;
+    if (/[A-Z]/.test(formData.password)) strength += 1;
+    if (/[0-9]/.test(formData.password)) strength += 1;
+    if (/[^A-Za-z0-9]/.test(formData.password)) strength += 1;
+
+    setPasswordStrength(Math.min(strength, 5));
+  }, [formData.password]);
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === "checkbox" ? value : checked
+    }));
+  };
+
+  const handleTermsChange = (e) => {
+    setAcceptedTerms(e.target.checked);
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
     
-    if (password !== confirmPassword) {
+    // Validation
+    if (!formData.mobile.match(/^[0-9]{10}$/)) {
+      setError("Please enter a valid 10-digit mobile number");
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      return;
+    }
+
+    if (!acceptedTerms) {
+      setError("You must accept the terms and conditions");
       setShake(true);
       setTimeout(() => setShake(false), 500);
       return;
@@ -49,14 +104,29 @@ export default function Register() {
     setIsLoading(true);
     
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Replace with actual API call in production
-      alert("Registered successfully!");
-      navigate("/login");
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mobile: formData.mobile,
+          password: formData.password
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      // Redirect to login page after successful registration
+      navigate("/login", { state: { registrationSuccess: true } });
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      setError(err.message);
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
     } finally {
       setIsLoading(false);
     }
@@ -99,9 +169,10 @@ export default function Register() {
               <input
                 type="text"
                 id="mobile"
+                name="mobile"
                 className="form-input"
-                value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
+                value={formData.mobile}
+                onChange={handleChange}
                 placeholder="Enter your mobile number"
                 required
               />
@@ -115,9 +186,10 @@ export default function Register() {
               <input
                 type={showPassword ? "text" : "password"}
                 id="password"
+                name="password"
                 className="form-input"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={handleChange}
                 placeholder="Create a strong password"
                 required
               />
@@ -125,35 +197,37 @@ export default function Register() {
                 type="button"
                 className="password-toggle"
                 onClick={togglePasswordVisibility}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? "👁️" : "👁️‍🗨️"}
               </button>
             </div>
             
             <div className="password-strength">
-              <div className={`strength-meter ${password.length > 0 ? 'active' : ''}`}>
+              <div className={`strength-meter ${formData.password.length > 0 ? 'active' : ''}`}>
                 <div 
-                  className={`strength-bar ${password.length >= 8 ? 'strong' : password.length >= 5 ? 'medium' : 'weak'}`} 
-                  style={{ width: `${Math.min(100, password.length * 10)}%` }}
+                  className={`strength-bar strength-${passwordStrength}`}
+                  style={{ width: `${passwordStrength * 20}%` }}
                 ></div>
               </div>
               <div className="strength-labels">
-                <span className={password.length < 5 ? 'active' : ''}>Weak</span>
-                <span className={password.length >= 5 && password.length < 8 ? 'active' : ''}>Medium</span>
-                <span className={password.length >= 8 ? 'active' : ''}>Strong</span>
+                <span className={passwordStrength <= 1 ? 'active' : ''}>Weak</span>
+                <span className={passwordStrength > 1 && passwordStrength <= 3 ? 'active' : ''}>Medium</span>
+                <span className={passwordStrength > 3 ? 'active' : ''}>Strong</span>
               </div>
             </div>
           </div>
 
           <div className="form-group">
-            <label htmlFor="confirm-password">Confirm Password</label>
+            <label htmlFor="confirmPassword">Confirm Password</label>
             <div className="input-with-icon">
               <input
                 type={showConfirmPassword ? "text" : "password"}
-                id="confirm-password"
+                id="confirmPassword"
+                name="confirmPassword"
                 className="form-input"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={formData.confirmPassword}
+                onChange={handleChange}
                 placeholder="Confirm your password"
                 required
               />
@@ -161,6 +235,7 @@ export default function Register() {
                 type="button"
                 className="password-toggle"
                 onClick={toggleConfirmPasswordVisibility}
+                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
               >
                 {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
               </button>
@@ -172,6 +247,8 @@ export default function Register() {
               type="checkbox" 
               id="terms" 
               className="terms-checkbox"
+              checked={acceptedTerms}
+              onChange={handleTermsChange}
               required
             />
             <label htmlFor="terms">

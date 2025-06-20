@@ -497,3 +497,24 @@
     width: 100%;
   }
 }
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+.loading-spinner svg {
+  animation: spin 1s linear infinite;
+}
+
+.no-activity {
+  text-align: center;
+  color: #94a3b8;
+  padding: 2rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

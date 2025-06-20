@@ -159,27 +159,89 @@
   cursor: pointer;
   font-size: 20px;
   transition: color 0.3s ease;
+  z-index: 2;
 }
 
 .password-toggle:hover {
   color: #ffbe0b;
 }
 
-.forgot-password {
-  text-align: right;
-  margin-top: 5px;
+/* Form Options */
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
 }
 
-.forgot-password a {
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #a0aec0;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.remember-me input {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  background: rgba(30, 35, 50, 0.6);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.remember-me input:checked {
+  background: #ffbe0b;
+  border-color: #ffbe0b;
+}
+
+.remember-me input:checked::after {
+  content: "✓";
+  position: absolute;
+  color: #1a1f2d;
+  font-size: 12px;
+  font-weight: bold;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.forgot-password {
   color: #ffbe0b;
   text-decoration: none;
   font-size: 14px;
   transition: color 0.3s ease;
 }
 
-.forgot-password a:hover {
+.forgot-password:hover {
   color: #ff6b6b;
   text-decoration: underline;
+}
+
+/* Password Strength Indicator */
+.password-strength {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.strength-bar {
+  height: 100%;
+  width: 0%;
+  background: #ff6b6b;
+  transition: width 0.3s ease;
+}
+
+.strength-bar.active {
+  background: linear-gradient(to right, #ff6b6b, #ffbe0b, #4ecdc4);
 }
 
 /* Button Styles */
@@ -237,6 +299,73 @@
   left: 100%;
 }
 
+/* Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 25px 0;
+  color: #a0aec0;
+  font-size: 14px;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.divider::before {
+  margin-right: 15px;
+}
+
+.divider::after {
+  margin-left: 15px;
+}
+
+/* Social Login */
+.social-login {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.social-btn.google {
+  background: #fff;
+  color: #4285F4;
+}
+
+.social-btn.facebook {
+  background: #1877F2;
+  color: #fff;
+}
+
+.social-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.social-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
 /* Footer Section */
 .login-footer {
   margin-top: 30px;
@@ -255,34 +384,6 @@
 .login-footer a:hover {
   color: #ff6b6b;
   text-decoration: underline;
-}
-
-.social-login {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.social-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(30, 35, 50, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #a0aec0;
-  font-size: 18px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.social-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffbe0b;
-  transform: translateY(-3px);
 }
 
 /* Animations */
@@ -327,6 +428,12 @@
   animation: fadeIn 0.3s ease-out;
 }
 
+.error-message p {
+  margin: 0;
+  color: #ff6b6b;
+  font-size: 14px;
+}
+
 /* Theme Colors */
 .theme-light {
   background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
@@ -347,4 +454,9 @@
 /* Loading Spinner */
 .loading-spinner {
   animation: spin 1s linear infinite;
+}
+
+/* Shake Animation */
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
 }

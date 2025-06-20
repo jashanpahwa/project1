@@ -488,3 +488,58 @@
 .loading-spinner {
   animation: spin 1s linear infinite;
 }
+
+/* Add to existing CSS */
+
+/* Password Strength Colors */
+.strength-0 { background: #ff6b6b; width: 20%; }
+.strength-1 { background: #ff6b6b; width: 40%; }
+.strength-2 { background: #ffbe0b; width: 60%; }
+.strength-3 { background: #ffbe0b; width: 80%; }
+.strength-4 { background: #4ecdc4; width: 90%; }
+.strength-5 { background: #4ecdc4; width: 100%; }
+
+/* Terms Checkbox */
+.terms-checkbox {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  background: rgba(30, 35, 50, 0.6);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.terms-checkbox:checked {
+  background: #ffbe0b;
+  border-color: #ffbe0b;
+}
+
+.terms-checkbox:checked::after {
+  content: "✓";
+  position: absolute;
+  color: #1a1f2d;
+  font-size: 12px;
+  font-weight: bold;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Success Message */
+.success-message {
+  background: rgba(78, 205, 196, 0.15);
+  border-left: 4px solid #4ecdc4;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.success-message p {
+  margin: 0;
+  color: #4ecdc4;
+  font-size: 14px;
+}

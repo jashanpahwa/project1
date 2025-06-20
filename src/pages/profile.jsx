@@ -1,24 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./css/profile.css";
+import axios from "axios";
 
 export default function Profile() {
   const [userData, setUserData] = useState({
-    id: "BXU12345",
-    name: "John Doe",
-    email: "john.doe@example.com",
-    mobile: "+91 9876543210",
-    joinDate: "15 Jan 2023",
-    lastLogin: "2 hours ago",
-    verified: true,
-    balance: "₹12,450.00"
+    id: "",
+    name: "",
+    email: "",
+    mobile: "",
+    joinDate: "",
+    lastLogin: "",
+    verified: false,
+    balance: 0
   });
 
   const [stats, setStats] = useState({
-    totalBets: 142,
-    wins: 87,
-    losses: 55,
-    winRate: "61.3%"
+    totalBets: 0,
+    wins: 0,
+    losses: 0,
+    winRate: "0%"
   });
 
   const [activeTab, setActiveTab] = useState("overview");
@@ -29,16 +30,70 @@ export default function Profile() {
     new: "",
     confirm: ""
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  // Mock data for recent activity
+  // Fetch user data from backend
   useEffect(() => {
-    setRecentActivity([
-      { id: 1, type: "login", device: "iPhone 13", location: "Mumbai, IN", time: "2 hours ago" },
-      { id: 2, type: "bet", game: "Aviator", amount: "₹500", outcome: "win", time: "5 hours ago" },
-      { id: 3, type: "withdrawal", amount: "₹2,000", status: "completed", time: "1 day ago" },
-      { id: 4, type: "deposit", amount: "₹5,000", method: "UPI", time: "3 days ago" }
-    ]);
-  }, []);
+    const fetchUserData = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem("token");
+        
+        // Fetch user profile
+        const profileResponse = await axios.get("http://localhost:5000/api/auth/me", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        // Fetch user stats
+        const statsResponse = await axios.get("http://localhost:5000/api/user/stats", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        // Fetch recent activity
+        const activityResponse = await axios.get("http://localhost:5000/api/user/activity", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        setUserData({
+          id: profileResponse.data.user._id,
+          name: profileResponse.data.user.name || "User",
+          email: profileResponse.data.user.email,
+          mobile: profileResponse.data.user.mobile,
+          joinDate: new Date(profileResponse.data.user.createdAt).toLocaleDateString(),
+          lastLogin: "Recently", // You would get this from the backend
+          verified: profileResponse.data.user.verified,
+          balance: profileResponse.data.user.balance || 0
+        });
+
+        setStats({
+          totalBets: statsResponse.data.totalBets,
+          wins: statsResponse.data.wins,
+          losses: statsResponse.data.losses,
+          winRate: statsResponse.data.winRate
+        });
+
+        setRecentActivity(activityResponse.data);
+      } catch (err) {
+        setError(err.response?.data?.error || "Failed to fetch profile data");
+        // Redirect to login if unauthorized
+        if (err.response?.status === 401) {
+          navigate("/login");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [navigate]);
 
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
@@ -48,13 +103,69 @@ export default function Profile() {
     }));
   };
 
-  const submitPasswordChange = (e) => {
+  const submitPasswordChange = async (e) => {
     e.preventDefault();
-    // In a real app, you would call an API here
-    alert("Password changed successfully!");
-    setShowPasswordModal(false);
-    setPasswordForm({ current: "", new: "", confirm: "" });
+    try {
+      if (passwordForm.new !== passwordForm.confirm) {
+        throw new Error("Passwords do not match");
+      }
+
+      const token = localStorage.getItem("token");
+      await axios.put(
+        "http://localhost:5000/api/user/change-password",
+        {
+          currentPassword: passwordForm.current,
+          newPassword: passwordForm.new
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      alert("Password changed successfully!");
+      setShowPasswordModal(false);
+      setPasswordForm({ current: "", new: "", confirm: "" });
+    } catch (err) {
+      setError(err.response?.data?.error || err.message);
+    }
   };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR"
+    }).format(amount);
+  };
+
+  if (loading) {
+    return (
+      <div className="profile-container">
+        <div className="loading-spinner">
+          <svg width="50" height="50" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" opacity="0.25"></circle>
+            <path 
+              fill="currentColor" 
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              opacity="0.75"
+            ></path>
+          </svg>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="profile-container">
+        <div className="error-message">
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()}>Try Again</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="profile-container">
@@ -82,7 +193,7 @@ export default function Profile() {
           <div className="stat-icon">💰</div>
           <div className="stat-content">
             <h3 className="stat-label">Balance</h3>
-            <p className="stat-value">{userData.balance}</p>
+            <p className="stat-value">{formatCurrency(userData.balance)}</p>
           </div>
         </div>
 
@@ -180,35 +291,41 @@ export default function Profile() {
         {activeTab === "activity" && (
           <div className="activity-tab">
             <h3>Recent Activity</h3>
-            <div className="activity-list">
-              {recentActivity.map(activity => (
-                <div key={activity.id} className="activity-item">
-                  <div className="activity-icon">
-                    {activity.type === "login" && "🔐"}
-                    {activity.type === "bet" && "🎮"}
-                    {activity.type === "deposit" && "📥"}
-                    {activity.type === "withdrawal" && "📤"}
-                  </div>
-                  <div className="activity-details">
-                    <div className="activity-main">
-                      {activity.type === "login" && (
-                        <span>Login from {activity.device} ({activity.location})</span>
-                      )}
-                      {activity.type === "bet" && (
-                        <span>Bet {activity.amount} on {activity.game} ({activity.outcome})</span>
-                      )}
-                      {activity.type === "deposit" && (
-                        <span>Deposited {activity.amount} via {activity.method}</span>
-                      )}
-                      {activity.type === "withdrawal" && (
-                        <span>Withdrew {activity.amount} ({activity.status})</span>
-                      )}
+            {recentActivity.length > 0 ? (
+              <div className="activity-list">
+                {recentActivity.map(activity => (
+                  <div key={activity._id} className="activity-item">
+                    <div className="activity-icon">
+                      {activity.type === "login" && "🔐"}
+                      {activity.type === "bet" && "🎮"}
+                      {activity.type === "deposit" && "📥"}
+                      {activity.type === "withdrawal" && "📤"}
                     </div>
-                    <div className="activity-time">{activity.time}</div>
+                    <div className="activity-details">
+                      <div className="activity-main">
+                        {activity.type === "login" && (
+                          <span>Login from {activity.device} ({activity.location})</span>
+                        )}
+                        {activity.type === "bet" && (
+                          <span>Bet {formatCurrency(activity.amount)} on {activity.game} ({activity.outcome})</span>
+                        )}
+                        {activity.type === "deposit" && (
+                          <span>Deposited {formatCurrency(activity.amount)} via {activity.method}</span>
+                        )}
+                        {activity.type === "withdrawal" && (
+                          <span>Withdrew {formatCurrency(activity.amount)} ({activity.status})</span>
+                        )}
+                      </div>
+                      <div className="activity-time">
+                        {new Date(activity.createdAt).toLocaleString()}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="no-activity">No recent activity found</p>
+            )}
           </div>
         )}
 
@@ -246,13 +363,6 @@ export default function Profile() {
                   Change
                 </button>
               </div>
-              <div className="setting-item">
-                <label>Two-Factor Authentication</label>
-                <div className="toggle-switch">
-                  <input type="checkbox" id="2fa-toggle" />
-                  <label htmlFor="2fa-toggle"></label>
-                </div>
-              </div>
             </div>
           </div>
         )}
@@ -265,10 +375,14 @@ export default function Profile() {
             <h3>Change Password</h3>
             <button 
               className="close-modal"
-              onClick={() => setShowPasswordModal(false)}
+              onClick={() => {
+                setShowPasswordModal(false);
+                setError("");
+              }}
             >
               &times;
             </button>
+            {error && <div className="error-message"><p>{error}</p></div>}
             <form onSubmit={submitPasswordChange}>
               <div className="form-group">
                 <label>Current Password</label>
