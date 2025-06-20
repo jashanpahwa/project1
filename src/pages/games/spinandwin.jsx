@@ -13,8 +13,8 @@ export const SpinAndWin = ({ balance, onBack, onBalanceChange }) => {
   const [jackpot, setJackpot] = useState(10000);
   const [showWinAnimation, setShowWinAnimation] = useState(false);
   const [currentBet, setCurrentBet] = useState(0);
+  const [targetPositions, setTargetPositions] = useState([0, 0, 0]);
 
-  // Paytable configuration
   const paytable = {
     "7️⃣7️⃣7️⃣": { multiplier: 20, bonus: "JACKPOT" },
     "💰💰💰": { multiplier: 10, bonus: "BIG WIN" },
@@ -31,79 +31,61 @@ export const SpinAndWin = ({ balance, onBack, onBalanceChange }) => {
   const spinReels = useCallback(() => {
     setSpinning(true);
     setWinAmount(0);
-    
-    // Deduct the bet amount
     onBalanceChange(-currentBet);
     
-    // Generate random stops for each reel
-    const stops = reels.map(() => Math.floor(Math.random() * symbols.length));
+    // Generate random final positions
+    const stops = Array(3).fill().map(() => Math.floor(Math.random() * symbols.length));
+    setTargetPositions(stops);
     
-    // Animate each reel with different durations
-    const spinDurations = [1000, 1500, 2000];
+    // Start spinning animation
+    const startTime = Date.now();
+    const spinDuration = 3000; // 3 seconds
     
-    stops.forEach((stop, index) => {
-      const duration = spinDurations[index];
-      const startTime = Date.now();
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / spinDuration, 1);
       
-      const spinInterval = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        
-        // Update reel position during spin
-        setReels(prev => {
-          const newReels = [...prev];
-          newReels[index] = (newReels[index] + 1) % symbols.length;
-          return newReels;
-        });
-        
-        if (progress >= 1) {
-          clearInterval(spinInterval);
-          // Set final position
-          setReels(prev => {
-            const newReels = [...prev];
-            newReels[index] = stop;
-            return newReels;
-          });
-          
-          // Check if all reels have stopped
-          if (index === stops.length - 1) {
-            setTimeout(() => finishSpin(stops), 500);
-          }
-        }
-      }, 50);
-    });
-  }, [currentBet, onBalanceChange, reels, symbols.length]);
+      setReels(prev => prev.map((_, i) => {
+        // Ease-out function for smooth deceleration
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
+        // Calculate current position (looping through symbols)
+        return Math.floor(prev[i] + (stops[i] - prev[i] + symbols.length) * easedProgress) % symbols.length;
+      }));
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Finalize positions
+        setReels(stops);
+        setSpinning(false);
+        finishSpin(stops);
+      }
+    };
+    
+    animate();
+  }, [currentBet, onBalanceChange, symbols.length]);
 
   const finishSpin = (stops) => {
-    setSpinning(false);
-    
-    // Get the symbols that landed
     const result = stops.map(stop => symbols[stop]).join("");
-    
-    // Check for winning combinations
     let win = 0;
     let bonus = null;
     
-    // Check for three matching symbols
     if (result[0] === result[1] && result[1] === result[2]) {
       const combo = `${result[0]}${result[1]}${result[2]}`;
       if (paytable[combo]) {
         win = currentBet * paytable[combo].multiplier;
         bonus = paytable[combo].bonus;
       }
-    }
-    // Check for two matching symbols (only left two)
-    else if (result[0] === result[1]) {
+    } else if (result[0] === result[1]) {
       const combo = `${result[0]}${result[1]}`;
       if (paytable[combo]) {
         win = currentBet * paytable[combo].multiplier;
       }
     }
     
-    // Handle jackpot
     if (bonus === "JACKPOT") {
       win += jackpot;
-      setJackpot(10000); // Reset jackpot
+      setJackpot(10000);
     } else if (result === "💰💰💰") {
       setJackpot(prev => prev + currentBet * 5);
     }
@@ -115,13 +97,11 @@ export const SpinAndWin = ({ balance, onBack, onBalanceChange }) => {
       setTimeout(() => setShowWinAnimation(false), 2000);
     }
     
-    // Add to history
     setHistory(prev => [
       { result, win, timestamp: new Date(), bonus },
       ...prev.slice(0, 9)
     ]);
     
-    // Continue auto spins if enabled
     if (autoSpins > 1) {
       setTimeout(() => {
         setAutoSpins(autoSpins - 1);
@@ -132,13 +112,8 @@ export const SpinAndWin = ({ balance, onBack, onBalanceChange }) => {
 
   const handleBet = ({ amount, autoRoll, rollsCount }) => {
     if (amount > balance) return;
-    
     setCurrentBet(amount);
-    
-    if (autoRoll) {
-      setAutoSpins(rollsCount);
-    }
-    
+    if (autoRoll) setAutoSpins(rollsCount);
     spinReels();
   };
 
@@ -153,12 +128,12 @@ export const SpinAndWin = ({ balance, onBack, onBalanceChange }) => {
         <div className="spin-wheels">
           {reels.map((reel, index) => (
             <div key={index} className={`wheel ${spinning ? "spinning" : ""}`}>
-              <div className="wheel-strip">
-                {[...symbols, ...symbols, ...symbols].map((symbol, i) => (
-                  <div 
-                    key={i} 
-                    className={`symbol ${i % symbols.length === reel ? "center" : ""}`}
-                  >
+              <div 
+                className="wheel-strip" 
+                style={{ transform: `translateY(-${reel * 100}px)` }}
+              >
+                {symbols.map((symbol, i) => (
+                  <div key={i} className={`symbol ${i === targetPositions[index] ? "winning" : ""}`}>
                     {symbol}
                   </div>
                 ))}
@@ -172,10 +147,7 @@ export const SpinAndWin = ({ balance, onBack, onBalanceChange }) => {
         {showWinAnimation && (
           <div className="win-animation">
             {winAmount >= jackpot ? (
-              <div className="jackpot-win">
-                <div>JACKPOT!</div>
-                <div>₹{winAmount.toLocaleString()}</div>
-              </div>
+              <div className="jackpot-win">JACKPOT! ₹{winAmount.toLocaleString()}</div>
             ) : winAmount > currentBet * 5 ? (
               <div className="big-win">BIG WIN!</div>
             ) : (
@@ -189,7 +161,7 @@ export const SpinAndWin = ({ balance, onBack, onBalanceChange }) => {
           onClick={() => handleBet({ amount: currentBet })}
           disabled={spinning}
         >
-          SPIN NOW
+          {spinning ? "SPINNING..." : "SPIN NOW"}
         </button>
         
         <BetControl 
@@ -238,4 +210,16 @@ export const SpinAndWin = ({ balance, onBack, onBalanceChange }) => {
       </div>
     </GameLayout>
   );
+};
+
+import PropTypes from 'prop-types';
+
+SpinAndWin.propTypes = {
+  balance: PropTypes.number.isRequired,
+  onBack: PropTypes.func.isRequired,
+  onBalanceChange: PropTypes.func.isRequired
+};
+
+SpinAndWin.defaultProps = {
+  onBalanceChange: () => console.warn('onBalanceChange function not provided')
 };
