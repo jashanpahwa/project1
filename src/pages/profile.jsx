@@ -7,7 +7,6 @@ export default function Profile() {
   const [userData, setUserData] = useState({
     id: "",
     name: "",
-    email: "",
     mobile: "",
     joinDate: "",
     lastLogin: "",
@@ -32,61 +31,45 @@ export default function Profile() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [updatingField, setUpdatingField] = useState(null); // Added this line
   const navigate = useNavigate();
 
-  // Fetch user data from backend
+  // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
         
-        // Fetch user profile
         const profileResponse = await axios.get("http://localhost:5000/api/auth/me", {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` }
         });
 
-        // Fetch user stats
         const statsResponse = await axios.get("http://localhost:5000/api/user/stats", {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` }
         });
 
-        // Fetch recent activity
         const activityResponse = await axios.get("http://localhost:5000/api/user/activity", {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` }
         });
 
         setUserData({
           id: profileResponse.data.user._id,
           name: profileResponse.data.user.name || "User",
-          email: profileResponse.data.user.email,
           mobile: profileResponse.data.user.mobile,
           joinDate: new Date(profileResponse.data.user.createdAt).toLocaleDateString(),
-          lastLogin: "Recently", // You would get this from the backend
+          lastLogin: profileResponse.data.user.lastLogin 
+            ? new Date(profileResponse.data.user.lastLogin).toLocaleString() 
+            : "Never",
           verified: profileResponse.data.user.verified,
           balance: profileResponse.data.user.balance || 0
         });
 
-        setStats({
-          totalBets: statsResponse.data.totalBets,
-          wins: statsResponse.data.wins,
-          losses: statsResponse.data.losses,
-          winRate: statsResponse.data.winRate
-        });
-
+        setStats(statsResponse.data);
         setRecentActivity(activityResponse.data);
       } catch (err) {
-        setError(err.response?.data?.error || "Failed to fetch profile data");
-        // Redirect to login if unauthorized
-        if (err.response?.status === 401) {
-          navigate("/login");
-        }
+        if (err.response?.status === 401) navigate("/login");
+        setError(err.response?.data?.error || "Failed to fetch data");
       } finally {
         setLoading(false);
       }
@@ -94,6 +77,29 @@ export default function Profile() {
 
     fetchUserData();
   }, [navigate]);
+
+  const handleProfileUpdate = async (field, value) => {
+    try {
+      setUpdatingField(field);
+      
+      if (field === 'mobile' && !/^[0-9]{10}$/.test(value)) {
+        throw new Error("Please enter a valid 10-digit mobile number");
+      }
+
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        "http://localhost:5000/api/user/update-profile",
+        { [field]: value },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setUserData(prev => ({ ...prev, [field]: value }));
+    } catch (err) {
+      setError(err.response?.data?.error || err.message);
+    } finally {
+      setUpdatingField(null);
+    }
+  };
 
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
@@ -179,7 +185,7 @@ export default function Profile() {
         </div>
         <div className="profile-info">
           <h1 className="profile-name">{userData.name}</h1>
-          <p className="profile-email">{userData.email}</p>
+          <p className="profile-mobile">{userData.mobile}</p>
           <div className="profile-meta">
             <span>Member since {userData.joinDate}</span>
             <span>Last login: {userData.lastLogin}</span>
@@ -259,10 +265,6 @@ export default function Profile() {
                 <span className="detail-value">{userData.mobile}</span>
               </div>
               <div className="detail-item">
-                <span className="detail-label">Email:</span>
-                <span className="detail-value">{userData.email}</span>
-              </div>
-              <div className="detail-item">
                 <span className="detail-label">Status:</span>
                 <span className="detail-value">
                   {userData.verified ? "Verified" : "Not Verified"}
@@ -337,17 +339,30 @@ export default function Profile() {
               <div className="setting-item">
                 <label>Full Name</label>
                 <input type="text" value={userData.name} readOnly />
-                <button className="edit-btn">Edit</button>
-              </div>
-              <div className="setting-item">
-                <label>Email Address</label>
-                <input type="email" value={userData.email} readOnly />
-                <button className="edit-btn">Edit</button>
+                <button 
+                  className="edit-btn"
+                  onClick={() => {
+                    const newName = prompt("Enter new name", userData.name);
+                    if (newName) handleProfileUpdate("name", newName);
+                  }}
+                  disabled={updatingField === 'name'}
+                >
+                  {updatingField === 'name' ? 'Updating...' : 'Edit'}
+                </button>
               </div>
               <div className="setting-item">
                 <label>Mobile Number</label>
                 <input type="tel" value={userData.mobile} readOnly />
-                <button className="edit-btn">Edit</button>
+                <button 
+                  className="edit-btn"
+                  onClick={() => {
+                    const newMobile = prompt("Enter new mobile number", userData.mobile);
+                    if (newMobile) handleProfileUpdate("mobile", newMobile);
+                  }}
+                  disabled={updatingField === 'mobile'}
+                >
+                  {updatingField === 'mobile' ? 'Updating...' : 'Edit'}
+                </button>
               </div>
             </div>
 

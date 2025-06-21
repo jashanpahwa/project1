@@ -60,7 +60,7 @@ export default function Register() {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === "checkbox" ? value : checked
+      [name]: type === "checkbox" ? checked : value
     }));
   };
 
