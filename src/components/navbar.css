@@ -9,7 +9,9 @@
   --gray: #94a3b8;
   --success: #10b981;
   --danger: #ef4444;
-  --navbar-height: 80px; /* Added CSS variable for navbar height */
+  --navbar-height: 80px;
+  --profile-color: #4ecdc4;
+  --logout-color: #ff6b6b;
 }
 
 /* ===== Navbar Container ===== */
@@ -24,29 +26,31 @@
   z-index: 1000;
   transition: all 0.3s ease;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  height: var(--navbar-height); /* Set fixed height */
-  box-sizing: border-box; /* Ensure padding is included in height */
+  height: var(--navbar-height);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
 }
 
 .navbar.scrolled {
   padding: 0.5rem 2rem;
   background-color: rgba(15, 23, 42, 0.95);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  --navbar-height: 60px; /* Reduced height when scrolled */
+  --navbar-height: 60px;
 }
 
-/* Add this new rule to create space for the navbar */
 body {
   padding-top: var(--navbar-height);
 }
 
 .navbar-container {
+  width: 100%;
   max-width: 1400px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 100%; /* Take full height of navbar */
+  height: 100%;
 }
 
 /* ===== Logo Styles ===== */
@@ -57,6 +61,7 @@ body {
   display: flex;
   align-items: center;
   position: relative;
+  z-index: 1010;
 }
 
 .logo-text {
@@ -100,6 +105,8 @@ body {
   display: flex;
   gap: 1.5rem;
   list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .nav-link {
@@ -157,6 +164,7 @@ body {
 .auth-buttons {
   display: flex;
   gap: 1rem;
+  align-items: center;
 }
 
 .auth-link {
@@ -168,18 +176,21 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 1rem;
 }
 
-.auth-link:not(.register) {
+/* Login Button */
+.auth-link:not(.register):not(.profile):not(.logout) {
   color: var(--light);
   border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-.auth-link:not(.register):hover {
+.auth-link:not(.register):not(.profile):not(.logout):hover {
   border-color: var(--light);
   background: rgba(255, 255, 255, 0.1);
 }
 
+/* Register Button */
 .register {
   background: linear-gradient(to right, var(--primary-light), var(--primary));
   color: white;
@@ -188,6 +199,31 @@ body {
 .register:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+
+/* Profile Button */
+.profile {
+  background: rgba(78, 205, 196, 0.2);
+  color: var(--light);
+  border: 2px solid rgba(78, 205, 196, 0.3);
+}
+
+.profile:hover {
+  background: rgba(78, 205, 196, 0.3);
+  border-color: var(--profile-color);
+}
+
+/* Logout Button */
+.logout {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--light);
+  border: 2px solid rgba(239, 68, 68, 0.3);
+  cursor: pointer;
+}
+
+.logout:hover {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: var(--danger);
 }
 
 .auth-icon {
@@ -246,6 +282,7 @@ body {
   transform: translateX(100%);
   transition: transform 0.3s ease;
   padding: 2rem;
+  overflow-y: auto;
 }
 
 .mobile-nav.open {
@@ -256,19 +293,22 @@ body {
   list-style: none;
   width: 100%;
   max-width: 300px;
+  margin: 0;
+  padding: 0;
 }
 
 .mobile-nav-link {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 0;
+  padding: 1.2rem 0;
   color: var(--gray);
   text-decoration: none;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 500;
   transition: all 0.3s ease;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
 }
 
 .mobile-nav-link:hover,
@@ -281,9 +321,24 @@ body {
 }
 
 .mobile-nav-icon {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
+  min-width: 30px;
+  text-align: center;
 }
 
+/* Mobile Auth Buttons */
+.mobile-nav-link.logout {
+  background: none;
+  border: none;
+  color: var(--logout-color);
+  cursor: pointer;
+}
+
+.mobile-nav-link.profile {
+  color: var(--profile-color);
+}
+
+/* Responsive Design */
 @media (max-width: 1024px) {
   .desktop-nav,
   .auth-buttons {
@@ -297,16 +352,31 @@ body {
 
 @media (max-width: 768px) {
   :root {
-    --navbar-height: 70px; /* Slightly smaller navbar on tablet */
+    --navbar-height: 70px;
   }
-}
-
-@media (max-width: 480px) {
+  
   .navbar {
     padding: 1rem;
   }
   
+  .mobile-nav-link {
+    font-size: 1.1rem;
+    padding: 1rem 0;
+  }
+}
+
+@media (max-width: 480px) {
   :root {
-    --navbar-height: 60px; /* Smallest navbar on mobile */
+    --navbar-height: 60px;
+  }
+  
+  .logo {
+    font-size: 1.8rem;
+  }
+  
+  .mobile-nav {
+    padding: 1rem;
+    justify-content: flex-start;
+    padding-top: calc(var(--navbar-height) + 1rem);
   }
 }

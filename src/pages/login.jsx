@@ -124,7 +124,7 @@ export default function Login() {
 
       // Save token and redirect
       localStorage.setItem('token', data.token);
-      navigate("/dashboard");
+      navigate("/profile");
     } catch (err) {
       setError(err.message);
       setShake(true);

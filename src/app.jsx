@@ -13,6 +13,7 @@ import Profile from "./pages/profile";
 import Aviator from "./pages/games/aviator";
 import {DiceRoll} from "./pages/games/diceroll";
 import { SpinAndWin } from "./pages/games/spinandwin";
+import AdminPanel from "./pages/adminpanel";
 import AppRoutes from "./routes/approutes";
 
 
@@ -31,6 +32,7 @@ function App() {
         <Route path="/promotions" element={<Promotions />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/adminpanel" element={<AdminPanel />} />
         <Route path="/games/aviator" element={<Aviator />} />
         <Route path="/games/diceroll" element={<DiceRoll />} />
         <Route path="/games/spinandwin" element={<SpinAndWin />} />
