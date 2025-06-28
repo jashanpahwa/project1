@@ -122,9 +122,18 @@ export default function Login() {
         localStorage.removeItem("rememberedMobile");
       }
 
-      // Save token and redirect
+      
+      const userRes = await fetch('http://localhost:5000/api/admin/user', {
+      headers: { 'Authorization': `Bearer ${data.token}` }
+    });
+
+    const userData = await userRes.json();
       localStorage.setItem('token', data.token);
-      navigate("/profile");
+       if (userData.user.isAdmin) {
+      navigate('/adminpanel');
+    } else {
+      navigate('/profile');
+    }
     } catch (err) {
       setError(err.message);
       setShake(true);
