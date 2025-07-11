@@ -122,7 +122,7 @@ export default function Register() {
       }
 
       // Redirect to login page after successful registration
-      navigate("/login", { state: { registrationSuccess: true } });
+      navigate("/login", { state: { registrationSuccess: true },mobile: formData.mobile  });
     } catch (err) {
       setError(err.message);
       setShake(true);

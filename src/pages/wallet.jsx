@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // ⬅️ Add this line
 import "./css/wallet.css";
 
 export default function Wallet() {
@@ -8,59 +9,127 @@ export default function Wallet() {
   const [activeTab, setActiveTab] = useState("deposit");
   const [transactions, setTransactions] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("credit_card");
+  const navigate = useNavigate();
 
-  // Mock data for transactions
+  // Fetch user balance and transactions
   useEffect(() => {
-    const mockTransactions = [
-      { id: 1, type: "deposit", amount: 1000, status: "completed", date: "2023-05-15", time: "10:30 AM" },
-      { id: 2, type: "withdrawal", amount: 500, status: "completed", date: "2023-05-14", time: "02:45 PM" },
-      { id: 3, type: "deposit", amount: 2000, status: "pending", date: "2023-05-14", time: "09:15 AM" },
-      { id: 4, type: "game", amount: 250, status: "win", date: "2023-05-13", time: "11:20 PM" },
-      { id: 5, type: "game", amount: 100, status: "loss", date: "2023-05-12", time: "08:45 PM" },
-    ];
-    setTransactions(mockTransactions);
-    setBalance(2250); // Initial balance
-  }, []);
+    const fetchWalletData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/login');
+          return;
+        }
 
-  const handleDeposit = () => {
-    if (depositAmount <= 0) return;
-    setIsProcessing(true);
-    setTimeout(() => {
-      setBalance(prev => prev + depositAmount);
-      setTransactions(prev => [
-        {
-          id: Date.now(),
-          type: "deposit",
-          amount: depositAmount,
-          status: "completed",
-          date: new Date().toLocaleDateString(),
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        },
-        ...prev
-      ]);
-      setIsProcessing(false);
-    }, 1500);
+        const [balanceRes, transactionsRes] = await Promise.all([
+          fetch('http://localhost:5000/api/user/balance', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }),
+          fetch('http://localhost:5000/api/user/transactions', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+        ]);
+
+        if (balanceRes.ok) {
+          const balanceData = await balanceRes.json();
+          setBalance(balanceData.balance);
+        }
+
+        if (transactionsRes.ok) {
+          const transactionsData = await transactionsRes.json();
+          setTransactions(transactionsData);
+        }
+      } catch (err) {
+        console.error('Error fetching wallet data:', err);
+      }
+    };
+
+    fetchWalletData();
+  }, [navigate]);
+
+ const handleDeposit = async () => {
+  if (depositAmount <= 0) return;
+  setIsProcessing(true);
+
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch('http://localhost:5000/api/wallet/deposit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        amount: depositAmount,
+        paymentMethod
+      })
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      setTransactions(prev => [data.transaction, ...prev]);
+      alert('Deposit request submitted. Please wait for admin approval.');
+    } else {
+      throw new Error(data.error || 'Deposit request failed');
+    }
+  } catch (err) {
+    alert(`Error: ${err.message}`);
+  } finally {
+    setIsProcessing(false);
+  }
+};
+
+const handleWithdraw = async () => {
+  if (withdrawAmount <= 0 || withdrawAmount > balance) return;
+  setIsProcessing(true);
+
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch('http://localhost:5000/api/wallet/withdraw', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        amount: withdrawAmount,
+        bankDetails: {
+          bankName: "State Bank of India",
+          accountNumber: "XXXX-XXXX-7890"
+        }
+      })
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      setBalance(data.newBalance);
+      setTransactions(prev => [data.transaction, ...prev]);
+      alert('Withdrawal processed. Amount deducted from your balance pending admin approval.');
+    } else {
+      throw new Error(data.error || 'Withdrawal failed');
+    }
+  } catch (err) {
+    alert(`Error: ${err.message}`);
+  } finally {
+    setIsProcessing(false);
+  }
+};
+
+    // Update the payment method selection in your JSX
+  const handleMethodSelect = (method) => {
+    setPaymentMethod(method);
+    // Add visual feedback for selected method
+    document.querySelectorAll('.method-card').forEach(card => {
+      card.classList.remove('active');
+    });
+    document.querySelector(`.method-card[data-method="${method}"]`).classList.add('active');
   };
 
-  const handleWithdraw = () => {
-    if (withdrawAmount <= 0 || withdrawAmount > balance) return;
-    setIsProcessing(true);
-    setTimeout(() => {
-      setBalance(prev => prev - withdrawAmount);
-      setTransactions(prev => [
-        {
-          id: Date.now(),
-          type: "withdrawal",
-          amount: withdrawAmount,
-          status: "completed",
-          date: new Date().toLocaleDateString(),
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        },
-        ...prev
-      ]);
-      setIsProcessing(false);
-    }, 1500);
-  };
 
   return (
     <div className="wallet-container">
@@ -120,25 +189,40 @@ export default function Wallet() {
         {activeTab === "deposit" && (
           <div className="deposit-tab">
             <div className="payment-methods">
-              <h3 className="section-title">Payment Methods</h3>
-              <div className="method-grid">
-                <div className="method-card active">
-                  <div className="method-icon">💳</div>
-                  <p className="method-name">Credit Card</p>
-                </div>
-                <div className="method-card">
-                  <div className="method-icon">🏦</div>
-                  <p className="method-name">Bank Transfer</p>
-                </div>
-                <div className="method-card">
-                  <div className="method-icon">📱</div>
-                  <p className="method-name">UPI</p>
-                </div>
-                <div className="method-card">
-                  <div className="method-icon">🪙</div>
-                  <p className="method-name">Crypto</p>
-                </div>
-              </div>
+        <h3 className="section-title">Payment Methods</h3>
+        <div className="method-grid">
+          <div 
+            className="method-card active" 
+            data-method="credit_card"
+            onClick={() => handleMethodSelect("credit_card")}
+          >
+            <div className="method-icon">💳</div>
+            <p className="method-name">Credit Card</p>
+          </div>
+          <div 
+            className="method-card" 
+            data-method="bank_transfer"
+            onClick={() => handleMethodSelect("bank_transfer")}
+          >
+            <div className="method-icon">🏦</div>
+            <p className="method-name">Bank Transfer</p>
+          </div>
+          <div 
+            className="method-card" 
+            data-method="upi"
+            onClick={() => handleMethodSelect("upi")}
+          >
+            <div className="method-icon">📱</div>
+            <p className="method-name">UPI</p>
+          </div>
+          <div 
+            className="method-card" 
+            data-method="crypto"
+            onClick={() => handleMethodSelect("crypto")}
+          >
+            <div className="method-icon">🪙</div>
+            <p className="method-name">Crypto</p>
+          </div>
             </div>
 
             <div className="deposit-form">
@@ -168,6 +252,7 @@ export default function Wallet() {
                 {isProcessing ? "Processing..." : "Deposit Now"}
               </button>
             </div>
+          </div>
           </div>
         )}
 

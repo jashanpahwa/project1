@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { GameLayout } from "../../components/gamelayout.jsx";
 import { BetControl } from "../../components/betcontrol.jsx";
+import PropTypes from 'prop-types'; 
 import "../css/diceroll.css";
+import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
 
 export const DiceRoll = ({ balance, onBack, onBalanceChange }) => {
   const [diceValue, setDiceValue] = useState(1);
@@ -11,28 +14,60 @@ export const DiceRoll = ({ balance, onBack, onBalanceChange }) => {
   const [winAmount, setWinAmount] = useState(0);
   const [autoRolling, setAutoRolling] = useState(false);
   const [autoRollsLeft, setAutoRollsLeft] = useState(0);
+  const [currentBetId, setCurrentBetId] = useState(null);
+  const auth = useAuth();
+  const authToken = auth?.authToken || '';
+
+   const api = axios.create({
+    baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000',
+    headers: {
+      'Authorization': `Bearer ${authToken}`
+    }
+  });
 
   const rollDice = () => {
     return Math.floor(Math.random() * 6) + 1;
   };
 
-  const handleBet = ({ amount, autoRoll, rollsCount }) => {
-    if (amount > balance) return;
-    
-    if (autoRoll) {
-      setAutoRolling(true);
-      setAutoRollsLeft(rollsCount);
+  const handleBet = async ({ amount, autoRoll, rollsCount }) => {
+     if (!authToken) {
+      alert('Please login to play');
+      return;
+    }   
+    if (amount > balance) {
+      alert('Insufficient balance');
       return;
     }
     
-    placeBet(amount);
+    try {
+      // Place bet with backend
+      const response = await api.post('/api/dice/bet', {
+        amount,
+        selectedNumber
+      });
+      
+      // Update local balance
+      onBalanceChange(response.data.newBalance);
+      
+      if (autoRoll) {
+        setAutoRolling(true);
+        setAutoRollsLeft(rollsCount);
+      }
+      
+      setCurrentBetId(response.data.betId);
+      startRollAnimation(amount);
+    } catch (error) {
+      console.error('Bet placement error:', error);
+      alert(error.response?.data?.error || 'Failed to place bet');
+    }
   };
 
-  const placeBet = (amount) => {
-    if (rolling) return;
-    
+  
+
+
+ 
+  const startRollAnimation = (amount) => {
     setRolling(true);
-    onBalanceChange(-amount);
     
     // Animate dice roll
     const rolls = [];
@@ -47,39 +82,62 @@ export const DiceRoll = ({ balance, onBack, onBalanceChange }) => {
     }
   };
 
-  const finishRoll = (value, amount) => {
-    setRolling(false);
-    
-    const isWin = value === selectedNumber;
-    const win = isWin ? amount * 2 : 0; // 2x payout
-    
-    setWinAmount(win);
-    if (win > 0) {
-      onBalanceChange(win);
-    }
-    
-    // Add to last rolls
-    setLastRolls(prev => [
-      { value, win, timestamp: new Date() },
-      ...prev.slice(0, 9)
-    ]);
-    
-    // Continue auto roll if active
-    if (autoRolling && autoRollsLeft > 1) {
-      setTimeout(() => {
-        setAutoRollsLeft(autoRollsLeft - 1);
-        placeBet(amount);
-      }, 1000);
-    } else {
-      setAutoRolling(false);
+  const finishRoll = async (value, amount) => {
+    try {
+      // Send result to backend
+      const response = await api.post('/api/dice/result', {
+        betId: currentBetId,
+        diceResult: value
+      });
+      
+      const { isWin, winAmount, balance: newBalance } = response.data;
+      
+      setRolling(false);
+      setWinAmount(winAmount);
+      onBalanceChange(response.data.newBalance);
+     
+      
+      // Add to last rolls
+      setLastRolls(prev => [
+        { value, win: winAmount, timestamp: new Date() },
+        ...prev.slice(0, 9)
+      ]);
+      
+      // Continue auto roll if active
+      if (autoRolling && autoRollsLeft > 1) {
+        setTimeout(() => {
+          setAutoRollsLeft(autoRollsLeft - 1);
+          handleBet({ amount, autoRoll: true, rollsCount: autoRollsLeft - 1 });
+        }, 1000);
+      } else {
+        setAutoRolling(false);
+      }
+    } catch (error) {
+      console.error('Result processing error:', error);
+      setRolling(false);
+      alert(error.response?.data?.error || 'Failed to process game result');
     }
   };
 
-  useEffect(() => {
-    if (autoRolling && autoRollsLeft > 0) {
-      // This will be handled in the placeBet function
-    }
-  }, [autoRolling, autoRollsLeft]);
+    useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        const response = await api.get('/api/dice/history');
+        const formattedRolls = response.data.map(bet => ({
+          value: bet.result,
+          win: bet.winAmount,
+          timestamp: bet.settledAt
+        })).filter(bet => bet.value); // Filter out bets without results
+        
+        setLastRolls(formattedRolls.slice(0, 10));
+      } catch (error) {
+        console.error('Failed to load game history:', error);
+      }
+    };
+    
+    loadHistory();
+  }, []); 
+
 
   return (
     <GameLayout title="Dice Roll" balance={balance} onBack={onBack}>
@@ -150,10 +208,10 @@ DiceRoll.defaultProps = {
   onBalanceChange: () => {}
 };
 
-import PropTypes from 'prop-types';
-
 DiceRoll.propTypes = {
   balance: PropTypes.number.isRequired,
   onBack: PropTypes.func.isRequired,
   onBalanceChange: PropTypes.func.isRequired
 };
+
+export default DiceRoll;

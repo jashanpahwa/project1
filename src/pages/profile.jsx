@@ -1,9 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./css/profile.css";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 export default function Profile() {
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, navigate]);
+
   const [userData, setUserData] = useState({
     id: "",
     name: "",
@@ -31,27 +41,38 @@ export default function Profile() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [updatingField, setUpdatingField] = useState(null); // Added this line
-  const navigate = useNavigate();
+  const [updatingField, setUpdatingField] = useState(null);
+
+  // API endpoints
+  const API_BASE = "http://localhost:5000/api";
+  const PROFILE_ENDPOINT = `${API_BASE}/auth/me`;
+  const STATS_ENDPOINT = `${API_BASE}/user/stats`;
+  const ACTIVITY_ENDPOINT = `${API_BASE}/user/activity`;
+  const UPDATE_PROFILE_ENDPOINT = `${API_BASE}/user/update-profile`;
+  const CHANGE_PASSWORD_ENDPOINT = `${API_BASE}/user/change-password`;
 
   // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem("token");
         
-        const profileResponse = await axios.get("http://localhost:5000/api/auth/me", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        if (!authToken) {
+          navigate("/login");
+          return;
+        }
 
-        const statsResponse = await axios.get("http://localhost:5000/api/user/stats", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        const activityResponse = await axios.get("http://localhost:5000/api/user/activity", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const [profileResponse, statsResponse, activityResponse] = await Promise.all([
+          axios.get(PROFILE_ENDPOINT, {
+            headers: { Authorization: `Bearer ${authToken}` }
+          }),
+          axios.get(STATS_ENDPOINT, {
+            headers: { Authorization: `Bearer ${authToken}` }
+          }),
+          axios.get(ACTIVITY_ENDPOINT, {
+            headers: { Authorization: `Bearer ${authToken}` }
+          })
+        ]);
 
         setUserData({
           id: profileResponse.data.user._id,
@@ -68,7 +89,10 @@ export default function Profile() {
         setStats(statsResponse.data);
         setRecentActivity(activityResponse.data);
       } catch (err) {
-        if (err.response?.status === 401) navigate("/login");
+        if (err.response?.status === 401) {
+          logout();
+          navigate("/login");
+        }
         setError(err.response?.data?.error || "Failed to fetch data");
       } finally {
         setLoading(false);
@@ -76,7 +100,7 @@ export default function Profile() {
     };
 
     fetchUserData();
-  }, [navigate]);
+  }, [authToken, navigate, logout]);
 
   const handleProfileUpdate = async (field, value) => {
     try {
@@ -86,11 +110,10 @@ export default function Profile() {
         throw new Error("Please enter a valid 10-digit mobile number");
       }
 
-      const token = localStorage.getItem("token");
-      const response = await axios.put(
-        "http://localhost:5000/api/user/update-profile",
+      await axios.put(
+        UPDATE_PROFILE_ENDPOINT,
         { [field]: value },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${authToken}` } }
       );
 
       setUserData(prev => ({ ...prev, [field]: value }));
@@ -116,16 +139,15 @@ export default function Profile() {
         throw new Error("Passwords do not match");
       }
 
-      const token = localStorage.getItem("token");
       await axios.put(
-        "http://localhost:5000/api/user/change-password",
+        CHANGE_PASSWORD_ENDPOINT,
         {
           currentPassword: passwordForm.current,
           newPassword: passwordForm.new
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${authToken}`
           }
         }
       );
@@ -143,6 +165,12 @@ export default function Profile() {
       style: "currency",
       currency: "INR"
     }).format(amount);
+  };
+
+  // Add a logout handler
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
   };
 
   if (loading) {
@@ -283,12 +311,16 @@ export default function Profile() {
               <Link to="/wallet" className="action-btn">
                 Go to Wallet
               </Link>
-              <Link to="/contact" className="action-btn">
-                Contact Support
-              </Link>
+              <button 
+                className="action-btn"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
             </div>
           </div>
         )}
+
 
         {activeTab === "activity" && (
           <div className="activity-tab">

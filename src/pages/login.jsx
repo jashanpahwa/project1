@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import axios from "axios";
 import "./css/login.css";
 
 export default function Login() {
@@ -10,63 +12,14 @@ export default function Login() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [shake, setShake] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState("light");
-  const [passwordStrength, setPasswordStrength] = useState(0);
   const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
 
-  // Dynamic background themes
-  const themes = {
-    light: "theme-light",
-    sunset: "theme-sunset",
-    ocean: "theme-ocean",
-    forest: "theme-forest"
-  };
-
-  // Rotate themes every 10 seconds
   useEffect(() => {
-    const themeKeys = Object.keys(themes);
-    let currentIndex = 0;
-    
-    const interval = setInterval(() => {
-      currentIndex = (currentIndex + 1) % themeKeys.length;
-      setCurrentTheme(themeKeys[currentIndex]);
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Check for remembered credentials on mount
-  useEffect(() => {
-    const rememberedMobile = localStorage.getItem("rememberedMobile");
-    if (rememberedMobile) {
-      setFormData(prev => ({
-        ...prev,
-        mobile: rememberedMobile,
-        rememberMe: true
-      }));
+    if (isAuthenticated) {
+      navigate("/profile");
     }
-  }, []);
-
-  // Calculate password strength
-  useEffect(() => {
-    if (formData.password.length === 0) {
-      setPasswordStrength(0);
-      return;
-    }
-
-    let strength = 0;
-    // Length check
-    if (formData.password.length > 5) strength += 1;
-    if (formData.password.length > 8) strength += 1;
-    // Complexity checks
-    if (/[A-Z]/.test(formData.password)) strength += 1;
-    if (/[0-9]/.test(formData.password)) strength += 1;
-    if (/[^A-Za-z0-9]/.test(formData.password)) strength += 1;
-
-    setPasswordStrength(Math.min(strength, 5));
-  }, [formData.password]);
+  }, [isAuthenticated, navigate]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -80,64 +33,35 @@ export default function Login() {
     e.preventDefault();
     setError("");
     
-    // Basic validation
     if (!formData.mobile.match(/^[0-9]{10}$/)) {
       setError("Please enter a valid 10-digit mobile number");
-      setShake(true);
-      setTimeout(() => setShake(false), 500);
       return;
     }
 
     if (formData.password.length < 6) {
       setError("Password must be at least 6 characters");
-      setShake(true);
-      setTimeout(() => setShake(false), 500);
       return;
     }
 
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          mobile: formData.mobile,
-          password: formData.password
-        }),
+      const response = await axios.post('http://localhost:5000/api/auth/login', {
+        mobile: formData.mobile,
+        password: formData.password
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
-      }
-
-      // Remember mobile if checked
-      if (formData.rememberMe) {
-        localStorage.setItem("rememberedMobile", formData.mobile);
-      } else {
-        localStorage.removeItem("rememberedMobile");
-      }
-
+      login(response.data.token);
       
-      const userRes = await fetch('http://localhost:5000/api/admin/user', {
-      headers: { 'Authorization': `Bearer ${data.token}` }
-    });
-
-    const userData = await userRes.json();
-      localStorage.setItem('token', data.token);
-       if (userData.user.isAdmin) {
-      navigate('/adminpanel');
-    } else {
+      if (formData.rememberMe) {
+        localStorage.setItem('rememberedMobile', formData.mobile);
+      } else {
+        localStorage.removeItem('rememberedMobile');
+      }
+      
       navigate('/profile');
-    }
     } catch (err) {
-      setError(err.message);
-      setShake(true);
-      setTimeout(() => setShake(false), 500);
+      setError(err.response?.data?.message || "Login failed");
     } finally {
       setIsLoading(false);
     }

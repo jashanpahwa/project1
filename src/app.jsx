@@ -1,6 +1,4 @@
-
-
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar";
 import Home from "./pages/home";
 import Login from "./pages/login";
@@ -14,31 +12,33 @@ import Aviator from "./pages/games/aviator";
 import {DiceRoll} from "./pages/games/diceroll";
 import { SpinAndWin } from "./pages/games/spinandwin";
 import AdminPanel from "./pages/adminpanel";
-import AppRoutes from "./routes/approutes";
-
-
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
-  
   return (
-    <Router>
+    <>
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/wallet" element={<Wallet />} />
+        
+        {/* Protected routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/wallet" element={<Wallet />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/games/aviator" element={<Aviator />} />
+          <Route path="/games/diceroll" element={<DiceRoll />} />
+          <Route path="/games/spinandwin" element={<SpinAndWin />} />
+        </Route>
+
+        {/* Public routes */}
         <Route path="/promotions" element={<Promotions />} />
-        <Route path="/profile" element={<Profile />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/adminpanel" element={<AdminPanel />} />
-        <Route path="/games/aviator" element={<Aviator />} />
-        <Route path="/games/diceroll" element={<DiceRoll />} />
-        <Route path="/games/spinandwin" element={<SpinAndWin />} />
-        {/* Add more games here */}
       </Routes>
-    </Router>
+    </>
   );
 }
 

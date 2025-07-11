@@ -1,6 +1,6 @@
-// src/components/Navbar/Navbar.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import "./navbar.css";
 
 export default function Navbar() {
@@ -8,68 +8,15 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // Add loading state
+  const { isAuthenticated, logout } = useAuth();
 
-   // Proper authentication check with error handling
   useEffect(() => {
-    const checkAuth = async () => {
-      setIsLoading(true);
-      const token = localStorage.getItem('authToken');
-      
-      if (!token) {
-        console.log('No token found');
-        setIsLoggedIn(false);
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        console.log('Checking auth with token:', token);
-        const response = await fetch('http://localhost:5000/api/auth/me', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include' // Important for cookies if using them
-        });
-
-        console.log('Auth check response:', response);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('Auth check data:', data);
-        
-        if (data.user) {
-          console.log('User is authenticated');
-          setIsLoggedIn(true);
-        } else {
-          console.log('No user data received');
-          setIsLoggedIn(false);
-          localStorage.removeItem('authToken');
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        setIsLoggedIn(false);
-        localStorage.removeItem('authToken');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-
-    // Set up scroll listener
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [location]);
+  }, []);
 
   const navItems = [
     { path: "/", label: "Home", icon: "🏠" },
@@ -79,27 +26,20 @@ export default function Navbar() {
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    setIsLoggedIn(false);
+    logout();
     navigate('/login');
     setMobileMenuOpen(false);
   };
 
-  if (isLoading) {
-    return <div className="navbar-loading">Loading...</div>;
-  }
-
   return (
     <header className={`navbar ${scrolled ? "scrolled" : ""}`}>
       <div className="navbar-container">
-        {/* Logo with animation */}
         <Link to="/" className="logo">
           <span className="logo-text">Bet</span>
           <span className="logo-x">X</span>
           <span className="logo-dot">•</span>
         </Link>
 
-        {/* Desktop Navigation */}
         <nav className="desktop-nav">
           <ul className="nav-list">
             {navItems.map((item) => (
@@ -112,45 +52,31 @@ export default function Navbar() {
                 >
                   <span className="nav-icon">{item.icon}</span>
                   <span className="nav-label">{item.label}</span>
-                  <span className="nav-underline"></span>
                 </Link>
               </li>
             ))}
           </ul>
         </nav>
 
-        {/* Auth Buttons - Changes based on login status */}
         <div className="auth-buttons">
-          {isLoggedIn ? (
+          {isAuthenticated ? (
             <>
-              <Link
-                to="/profile"
-                className="auth-link profile"
-              >
+              <Link to="/profile" className="auth-link profile">
                 <span className="auth-icon">👤</span>
                 Profile
               </Link>
-              <button 
-                onClick={handleLogout}
-                className="auth-link logout"
-              >
+              <button onClick={handleLogout} className="auth-link logout">
                 <span className="auth-icon">🚪</span>
                 Logout
               </button>
             </>
           ) : (
             <>
-              <Link
-                to="/login"
-                className="auth-link"
-              >
+              <Link to="/login" className="auth-link">
                 <span className="auth-icon">🔑</span>
                 Login
               </Link>
-              <Link
-                to="/register"
-                className="auth-link register"
-              >
+              <Link to="/register" className="auth-link register">
                 <span className="auth-icon">✍️</span>
                 Register
               </Link>
@@ -158,7 +84,6 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile Menu Button */}
         <button
           className={`mobile-menu-button ${mobileMenuOpen ? "open" : ""}`}
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -168,7 +93,8 @@ export default function Navbar() {
           <span></span>
           <span></span>
         </button>
-      </div>
+      </div>  
+
 
       {/* Mobile Navigation */}
       <div className={`mobile-nav ${mobileMenuOpen ? "open" : ""}`}>
@@ -187,7 +113,7 @@ export default function Navbar() {
               </Link>
             </li>
           ))}
-          {isLoggedIn ? (
+          {isAuthenticated ? (
             <>
               <li>
                 <Link
